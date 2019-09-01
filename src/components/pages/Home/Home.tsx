@@ -3,8 +3,8 @@ import { of } from 'rxjs';
 import { ajax } from 'rxjs/ajax';
 import { map, catchError } from 'rxjs/operators';
 
-class Home extends React.Component {
-    constructor(props) {
+class Home extends React.Component<any, any> {
+    constructor(props: any) {
         super(props);
         this.state = {output: "12345"};
     }
