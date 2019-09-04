@@ -1,8 +1,11 @@
-import React, { Fragment } from 'react';
+import React from 'react';
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
+import { Link, withRouter } from 'react-router-dom';
+import { actionCreators as authActionCreators } from "../../../store/Auth";
 import TextField from '@material-ui/core/TextField';
 import { withStyles, createStyles, Theme, Button, Container, Grid, Typography } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles';
-import { Link } from 'react-router-dom';
 
 const styles = (theme: Theme) => createStyles({
     textField: {
@@ -25,6 +28,22 @@ const styles = (theme: Theme) => createStyles({
     }
 });
 
+const mapStateToProps = (state: any) => ({
+    currentUser: state.auth.currentUser,
+    isLoading: state.auth.isLoading,
+    isError: state.auth.isError,
+    errorMessage: state.auth.errorMessage
+});
+
+const mapDispatchToProps = (dispatch: any) => {
+    return {
+        actions: bindActionCreators(
+            { handleSignIn: authActionCreators.handleSignIn },
+            dispatch
+        )
+    };
+};
+
 class Login extends React.Component<any, any> {
 
     constructor(props: any) {
@@ -45,16 +64,23 @@ class Login extends React.Component<any, any> {
         });
     }
 
-    handleSubmit = (event: any) => {
-        alert('Email: ' + this.state.email + ' Password: ' + this.state.password);
+    handleSignIn = (event: any) => {
         event.preventDefault();
+
+        this.props.actions.handleSignIn(this.state.email, this.state.password);
+        this.setState({
+            email: '',
+            password: ''
+        });
+        
+        this.props.history.push('/');
     }
 
     render() {
         const { classes } = this.props;
         return (
             <Container maxWidth="sm">
-                <form onSubmit={this.handleSubmit}>
+                <form>
                     <Grid container spacing={2}>
                         <Grid item xs={6}>
                             <TextField
@@ -103,7 +129,7 @@ class Login extends React.Component<any, any> {
                                 <Button
                                     variant="contained"
                                     color="primary"
-                                    onClick={this.handleSubmit}
+                                    onClick={this.handleSignIn}
                                     fullWidth>Log in</Button>
                             </Grid>
                         </Grid>
@@ -123,4 +149,4 @@ class Login extends React.Component<any, any> {
     }
 }
 
-export default withStyles(styles)(Login);
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(withRouter(Login)));

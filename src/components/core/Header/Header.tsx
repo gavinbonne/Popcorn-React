@@ -1,14 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { actionCreators as authActionCreators } from "../../../store/Auth";
+
 import { Link as MatLink } from '@material-ui/core'
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
 import InputBase from '@material-ui/core/InputBase';
 import { fade, Theme, createStyles } from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import { withStyles } from '@material-ui/styles';
 import './Header.scss';
@@ -68,21 +70,60 @@ const styles = (theme: Theme) => createStyles({
     },
 });
 
+const mapStateToProps = (state: any) => ({
+    currentUser: state.auth.currentUser,
+});
+
+const mapDispatchToProps = (dispatch: any) => {
+    return {
+        actions: bindActionCreators(
+            { handleSignOut: authActionCreators.handleSignOut },
+            dispatch
+        )
+    };
+};
+
 class Header extends React.Component<any, any> {
+
+    handleSignOut = () => {
+        this.props.actions.handleSignOut();
+    }
+
     render() {
         const { classes } = this.props;
+
+        let authButton;
+        if (!this.props.currentUser) {
+            authButton = <Button
+                variant="contained"
+                color="secondary"
+                component={Link}
+                to="/login">
+                Log in
+            </Button>;
+        } else {
+            authButton = <div>
+                <Button
+                    color="inherit"
+                    component={Link}
+                    to="/user">
+                    {this.props.currentUser.fullName}
+                </Button>
+
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={this.handleSignOut}
+                    component={Link}
+                    to="/login">
+                    Log Out
+                </Button>
+            </div>
+        }
 
         return (
             <AppBar position="static" >
                 <Toolbar>
-                    {/* <IconButton
-                        edge="start"
-                        className=""
-                        color="inherit"
-                        aria-label="menu" >
-                        <MenuIcon />
-                    </IconButton> */}
-
                     <MatLink
                         component={Link}
                         to="/"
@@ -108,16 +149,11 @@ class Header extends React.Component<any, any> {
                         </div>
                     </div>
 
-                    <Button
-                        color="inherit"
-                        component={Link}
-                        to="/login">
-                        Login
-                    </Button>
+                    {authButton}
                 </Toolbar>
             </AppBar>
         );
     }
 }
 
-export default withStyles(styles)(Header);
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Header));
